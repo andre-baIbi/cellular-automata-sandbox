@@ -1,42 +1,85 @@
+import random
+
 import pygame
+from pygame import Surface
+
+GRID_SQUARE_CELL_SIDE_SIZE = 10
+
+def paint(screen: Surface, grid, color="red"):
+    for y, line in enumerate(grid):
+        for x, column in enumerate(line):
+            if column == 1:
+                pos_x = GRID_SQUARE_CELL_SIDE_SIZE * x
+                pos_y = GRID_SQUARE_CELL_SIDE_SIZE * y
+                pygame.draw.rect(screen,
+                                 color,
+                                 ((pos_x, pos_y), (GRID_SQUARE_CELL_SIDE_SIZE, GRID_SQUARE_CELL_SIDE_SIZE)
+                ))
+
+def ifAnyAroundIs1(grid, x, y):
+    pos_dict = {
+        0: (-1, -1),
+        1: (0, -1),
+        2: (1, -1),
+        3: (-1, 0),
+        4: (1, 0),
+        5: (-1, 1),
+        6: (0, 1),
+        7: (1, 1),
+    }
+
+    for _, pos in pos_dict.items():
+        try:
+            if grid[y + pos[0]][x + pos[1]] == 1:
+                return True
+        except IndexError:
+            continue
+    return False
+
+
+def generate(grid):
+    new_grid = []
+
+    for y, line in enumerate(grid):
+        new_grid.append([])
+        for x, column in enumerate(line):
+            if ifAnyAroundIs1(grid, x, y):
+                new_grid[y].append(1)
+                continue
+            new_grid[y].append(0)
+
+    return new_grid
+
 def game():
     pygame.init()
 
     GAME_WIDTH = 1600
     GAME_HEIGHT = 800
-
-    GRID_SQUARE_CELL_SIDE_SIZE = 10
+    TICK = 10
 
     screen = pygame.display.set_mode((GAME_WIDTH, GAME_HEIGHT))
     clock = pygame.time.Clock()
     running = True
-    dt = 0
 
-    square_x = screen.get_width() // 2
-    square_y = screen.get_height() // 2
-    square_side_size = 10
+    #
+    grid = [[0 for _ in range(screen.get_width() // GRID_SQUARE_CELL_SIDE_SIZE)]
+                      for _ in range(screen.get_height() // GRID_SQUARE_CELL_SIDE_SIZE)]
+
+    grid[screen.get_height()//(2*GRID_SQUARE_CELL_SIDE_SIZE)-1][screen.get_width()//(2*GRID_SQUARE_CELL_SIDE_SIZE)-1] = 1
+    #
+
+
+
 
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_DOWN:
-                    square_y += GRID_SQUARE_CELL_SIDE_SIZE
-                if event.key == pygame.K_UP:
-                    square_y -= GRID_SQUARE_CELL_SIDE_SIZE
-                if event.key == pygame.K_LEFT:
-                    square_x -= GRID_SQUARE_CELL_SIDE_SIZE
-                if event.key == pygame.K_RIGHT:
-                    square_x += GRID_SQUARE_CELL_SIDE_SIZE
+                ...
 
 
         screen.fill("white")
-
-        keys = pygame.key.get_pressed()
-
-        main_sq = pygame.draw.rect(screen, "red", ((square_x, square_y),(square_side_size, square_side_size)))
-        orbital_sq = [draw_orbital_sq(screen, square_side_size, square_x, square_y, pos) for pos in range(8)]
 
         #Draw grid
         for x in range(0, screen.get_width(), GRID_SQUARE_CELL_SIDE_SIZE):
@@ -45,26 +88,17 @@ def game():
         for y in range(0, screen.get_height(), GRID_SQUARE_CELL_SIDE_SIZE):
             pygame.draw.line(screen, "black", (0,y), (screen.get_width(),y), width=1)
 
+        keys = pygame.key.get_pressed()
+
+        paint(screen, grid, color=[random.randint(0,255) for _ in range(3)])
+        grid = generate(grid)
 
         pygame.display.flip()
-        dt = clock.tick(60) / 1000
+
+        dt = clock.tick(TICK)
 
     pygame.quit()
 
-
-def draw_orbital_sq(screen, square_side_size, square_x, square_y, pos, color = "green"):
-    pos_dict = {
-        0: (-square_side_size, -square_side_size),
-        1: (0, -square_side_size),
-        2: (square_side_size, -square_side_size),
-        3: (-square_side_size, 0),
-        4: (square_side_size, 0),
-        5: (-square_side_size, square_side_size),
-        6: (0, square_side_size),
-        7: (square_side_size, square_side_size),
-    }
-
-    return pygame.draw.rect(screen, color, ((square_x + pos_dict[pos][0], square_y + pos_dict[pos][1]), (square_side_size, square_side_size)))
 
 
 if __name__ == '__main__':
