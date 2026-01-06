@@ -1,4 +1,5 @@
 import random
+from typing import Any
 
 import pygame
 from pygame import Surface
@@ -36,8 +37,60 @@ def ifAnyAroundIs1(grid, x, y):
             continue
     return False
 
+def how_many_neighbours_of_pos(grid, x, y):
+    """
+    Calculates how many cells around (x,y) are 1
+    :param grid: list[cells]
+    :param x: cell pos x in grid
+    :param y: cell pos y in grid
+    :return: number of neighbours
+    """
+
+    # [5, 6, 7]
+    # [3, X, 4]
+    # [1, 2, 3]
+
+    pos_dict = {
+        0: (-1, -1),
+        1: (0, -1),
+        2: (1, -1),
+        3: (-1, 0),
+        4: (1, 0),
+        5: (-1, 1),
+        6: (0, 1),
+        7: (1, 1),
+    }
+
+    _sum = 0
+    for _, pos in pos_dict.items():
+        try:
+            if grid[y + pos[0]][x + pos[1]] == 1:
+                _sum += 1
+        except IndexError:
+            continue
+    return _sum
+
+def process_grid_with_nature_of_code_rules(grid, x, y):
+    number_of_neighbours = how_many_neighbours_of_pos(grid, x, y)
+    if should_be_dead(number_of_neighbours):
+        return 0
+    if number_of_neighbours == 3:
+        return 1
+    return grid[y][x]
+
+def should_be_dead(number_of_neighbours) -> bool | Any:
+    return number_of_neighbours >= 4 or number_of_neighbours <= 1
 
 def generate(grid):
+    new_grid = []
+    for y, line in enumerate(grid):
+        new_grid.append([])
+        for x, column in enumerate(line):
+            new_grid[y].append(process_grid_with_nature_of_code_rules(grid, x, y))
+
+    return new_grid
+
+def generate_giant_growing_square(grid):
     new_grid = []
 
     for y, line in enumerate(grid):
@@ -50,26 +103,20 @@ def generate(grid):
 
     return new_grid
 
-def game():
+def game(width=800, height=800, tick=10):
     pygame.init()
 
-    GAME_WIDTH = 1600
-    GAME_HEIGHT = 800
-    TICK = 10
+    GAME_WIDTH = width
+    GAME_HEIGHT = height
+    TICK = tick
 
     screen = pygame.display.set_mode((GAME_WIDTH, GAME_HEIGHT))
     clock = pygame.time.Clock()
     running = True
 
     #
-    grid = [[0 for _ in range(screen.get_width() // GRID_SQUARE_CELL_SIDE_SIZE)]
+    grid = [[random.randint(0,1) for _ in range(screen.get_width() // GRID_SQUARE_CELL_SIDE_SIZE)]
                       for _ in range(screen.get_height() // GRID_SQUARE_CELL_SIDE_SIZE)]
-
-    grid[screen.get_height()//(2*GRID_SQUARE_CELL_SIDE_SIZE)-1][screen.get_width()//(2*GRID_SQUARE_CELL_SIDE_SIZE)-1] = 1
-    #
-
-
-
 
     while running:
         for event in pygame.event.get():
@@ -90,7 +137,7 @@ def game():
 
         keys = pygame.key.get_pressed()
 
-        paint(screen, grid, color=[random.randint(0,255) for _ in range(3)])
+        paint(screen, grid, color="black")
         grid = generate(grid)
 
         pygame.display.flip()
