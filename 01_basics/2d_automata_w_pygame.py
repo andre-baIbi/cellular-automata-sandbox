@@ -1,3 +1,4 @@
+import argparse
 import random
 from typing import Any
 
@@ -103,18 +104,13 @@ def generate_giant_growing_square(grid):
 
     return new_grid
 
-def game(width=800, height=800, tick=10):
+def game(width, height, tick):
     pygame.init()
 
-    GAME_WIDTH = width
-    GAME_HEIGHT = height
-    TICK = tick
-
-    screen = pygame.display.set_mode((GAME_WIDTH, GAME_HEIGHT))
+    screen = pygame.display.set_mode((width, height))
     clock = pygame.time.Clock()
     running = True
 
-    #
     grid = [[random.randint(0,1) for _ in range(screen.get_width() // GRID_SQUARE_CELL_SIDE_SIZE)]
                       for _ in range(screen.get_height() // GRID_SQUARE_CELL_SIDE_SIZE)]
 
@@ -125,7 +121,6 @@ def game(width=800, height=800, tick=10):
             if event.type == pygame.KEYDOWN:
                 ...
 
-
         screen.fill("white")
 
         #Draw grid
@@ -135,18 +130,23 @@ def game(width=800, height=800, tick=10):
         for y in range(0, screen.get_height(), GRID_SQUARE_CELL_SIDE_SIZE):
             pygame.draw.line(screen, "black", (0,y), (screen.get_width(),y), width=1)
 
-        keys = pygame.key.get_pressed()
 
         paint(screen, grid, color="black")
         grid = generate(grid)
 
         pygame.display.flip()
 
-        dt = clock.tick(TICK)
+        clock.tick(tick)
 
     pygame.quit()
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--width", default=800, type=int)
+parser.add_argument("--height", default=800, type=int)
+parser.add_argument("--tick", default=10, type=int)
+
+args = parser.parse_args()
 
 
 if __name__ == '__main__':
-    game()
+    game(args.width, args.height, args.tick)
