@@ -62,14 +62,14 @@ def how_many_neighbours_of_pos(grid, x, y):
         7: (1, 1),
     }
 
-    _sum = 0
+    number_of_neighbours = 0
     for _, pos in pos_dict.items():
         try:
             if grid[y + pos[0]][x + pos[1]] == 1:
-                _sum += 1
+                number_of_neighbours += 1
         except IndexError:
             continue
-    return _sum
+    return number_of_neighbours
 
 def process_grid_with_nature_of_code_rules(grid, x, y):
     number_of_neighbours = how_many_neighbours_of_pos(grid, x, y)

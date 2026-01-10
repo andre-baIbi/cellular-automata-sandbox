@@ -1,4 +1,5 @@
 import random
+from math import floor
 
 import pygame
 from pygame import Surface
@@ -11,6 +12,10 @@ class Cell:
         self.x: int = x
         self.y: int = y
         self.w: int = w
+
+    @classmethod
+    def from_cell(cls, cell):
+        return cls(cell.state, cell.x, cell.y, cell.w)
 
 
 def paint(screen: Surface, grid: list[list[Cell]], color="red"):
@@ -31,7 +36,7 @@ def should_be_dead(number_of_neighbours):
 
 def how_many_neighbours_of_pos(grid, cell: Cell) -> int:
     """
-    Calculates how many cells around (x,y) are 1
+    Calculates how many cells around cell have state == 1
     :param grid: list[cells]
     :param cell: target cell
     :return: number of neighbours
@@ -52,17 +57,19 @@ def how_many_neighbours_of_pos(grid, cell: Cell) -> int:
         7: (1, 1),
     }
 
-    _sum = 0
+    number_of_neighbours = 0
     for _, pos in pos_dict.items():
         try:
-            if grid[cell.y + pos[0]][cell.x + pos[1]].state == 1:
-                _sum += 1
+            if floor(grid[cell.y + pos[0]][cell.x + pos[1]].state) == 1:
+                number_of_neighbours += 1
         except IndexError:
             continue
-    return _sum
+    return number_of_neighbours
 
 
-def process_grid_with_nature_of_code_rules(grid, cell) -> Cell:
+def process_grid_with_nature_of_code_rules(grid, old_cell) -> Cell:
+    cell = Cell.from_cell(old_cell) # This avoids the feedback loop
+
     number_of_neighbours = how_many_neighbours_of_pos(grid, cell)
     if should_be_dead(number_of_neighbours):
         cell.state = 0
